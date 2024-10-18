@@ -1,0 +1,18 @@
+#!/bin/bash
+
+gh repo list --limit 1000 --json name,url,description | jq -c '.[]' | while read -r repo; do
+    name=$(echo $repo | jq -r '.name')
+    url=$(echo $repo | jq -r '.url')
+
+    # Check for Netlify
+    netlify=$(gh api repos/:owner/$name/contents/netlify.toml --silent || echo "")
+
+    # Check for Vercel
+    vercel=$(gh api repos/:owner/$name/contents/vercel.json --silent || echo "")
+
+    if [ ! -z "$netlify" ]; then
+        echo "Netlify: $name - $url"
+    elif [ ! -z "$vercel" ]; then
+        echo "Vercel: $name - $url"
+    fi
+done
